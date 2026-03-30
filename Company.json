@@ -1,0 +1,11 @@
+{
+  "id": "3f9c2e4a-8b1d-4d2a-9c8f-2b4e7e1c9f12",
+  "name": "Technovate Solutions",
+  "services": [
+    {
+      "serviceId": "service_001",
+      "name": "Cloud Hosting"
+    }
+  ]
+}
+

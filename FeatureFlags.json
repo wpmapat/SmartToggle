@@ -1,0 +1,31 @@
+{
+  "id": "a3c1f9e2-4b7d-4f0e-9c32-1d8b6e4f92a",
+  "companyId": "3f9c2e4a-8b1d-4d2a-9c8f-2b4e7e1c9f12",
+  "company name": "Technovate Solutions",
+  "service name": "Mobile App",
+  "Flag name": "EnableDarkMode",
+  
+  "type": "boolean",
+  "defaultValue": false,
+  "description": "Enables dark mode for mobile users",
+  "rollout": {
+    "percentage": 50,
+    "startDate": "2026-01-12T00:00:00Z"
+  },
+  "targetingRules": [
+    {
+      "attribute": "region",
+      "operator": "equals",
+      "value": "US"
+    },
+    {
+      "attribute": "appVersion",
+      "operator": "greaterThan",
+      "value": "5.0.0"
+    }
+  ],
+  "createdAt": "2026-01-11T18:20:00Z",
+  "createdBy": "mobilelead@technova.com"
+}
+
+
