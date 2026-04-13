@@ -132,6 +132,10 @@ namespace SmartToggle.Controllers
 
                 return NoContent();
             }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });

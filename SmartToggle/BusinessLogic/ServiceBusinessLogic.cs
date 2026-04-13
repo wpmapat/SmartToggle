@@ -10,11 +10,13 @@ namespace SmartToggle.BusinessLogic
     {
         private readonly IServiceRepository _serviceRepository;
         private readonly ICompanyRepository _companyRepository;
+        private readonly IFeatureFlagRepository _featureFlagRepository;
 
-        public ServiceBusinessLogic(IServiceRepository serviceRepository, ICompanyRepository companyRepository)
+        public ServiceBusinessLogic(IServiceRepository serviceRepository, ICompanyRepository companyRepository, IFeatureFlagRepository featureFlagRepository)
         {
             _serviceRepository = serviceRepository;
             _companyRepository = companyRepository;
+            _featureFlagRepository = featureFlagRepository;
         }
 
         /// <summary>
@@ -116,6 +118,7 @@ namespace SmartToggle.BusinessLogic
                     return null;
 
                 service.Id = id;
+                service.CompanyId = existingService.CompanyId;
                 return await _serviceRepository.UpdateAsync(service);
             }
             catch (Exception ex)
@@ -134,7 +137,15 @@ namespace SmartToggle.BusinessLogic
                 if (string.IsNullOrWhiteSpace(id))
                     throw new ArgumentException("Service ID cannot be null or empty.", nameof(id));
 
-                return await _serviceRepository.DeleteAsync(id);
+                var service = await _serviceRepository.GetByIdAsync(id);
+                if (service == null)
+                    return false;
+
+                var featureFlags = await _featureFlagRepository.GetByServiceIdAsync(id);
+                if (featureFlags != null && featureFlags.Any())
+                    throw new InvalidOperationException($"Cannot delete service '{id}' because it has associated feature flags. Please delete all feature flags for this service first.");
+
+                return await _serviceRepository.DeleteAsync(id, service.CompanyId);
             }
             catch (Exception ex)
             {

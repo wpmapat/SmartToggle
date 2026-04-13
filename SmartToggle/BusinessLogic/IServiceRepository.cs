@@ -12,6 +12,6 @@ namespace SmartToggle.BusinessLogic
         Task<IEnumerable<Service>> GetByCompanyIdAsync(string companyId);
         Task<Service> AddAsync(Service service);
         Task<Service> UpdateAsync(Service service);
-        Task<bool> DeleteAsync(string id);
+        Task<bool> DeleteAsync(string id, string companyId);
     }
 }

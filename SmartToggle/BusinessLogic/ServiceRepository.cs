@@ -49,12 +49,12 @@ namespace SmartToggle.BusinessLogic
         {
             try
             {
-                var response = await _container.ReadItemAsync<Service>(id, new PartitionKey(id));
-                return response.Resource;
-            }
-            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                return null;
+                var query = _container.GetItemQueryIterator<Service>(
+                    new QueryDefinition("SELECT * FROM c WHERE c.id = @id")
+                        .WithParameter("@id", id));
+
+                var response = await query.ReadNextAsync();
+                return response.FirstOrDefault();
             }
             catch (Exception ex)
             {
@@ -118,7 +118,7 @@ namespace SmartToggle.BusinessLogic
                 if (service == null)
                     throw new ArgumentNullException(nameof(service));
 
-                var response = await _container.UpsertItemAsync(service, new PartitionKey(service.Id));
+                var response = await _container.UpsertItemAsync(service, new PartitionKey(service.CompanyId));
                 return response.Resource;
             }
             catch (Exception ex)
@@ -130,14 +130,17 @@ namespace SmartToggle.BusinessLogic
         /// <summary>
         /// Delete service from Cosmos DB
         /// </summary>
-        public async Task<bool> DeleteAsync(string id)
+        public async Task<bool> DeleteAsync(string id, string companyId)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(id))
                     throw new ArgumentException("Service ID cannot be null or empty.", nameof(id));
 
-                await _container.DeleteItemAsync<Service>(id, new PartitionKey(id));
+                if (string.IsNullOrWhiteSpace(companyId))
+                    throw new ArgumentException("Company ID cannot be null or empty.", nameof(companyId));
+
+                await _container.DeleteItemAsync<Service>(id, new PartitionKey(companyId));
                 return true;
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)

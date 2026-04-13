@@ -8,10 +8,12 @@ namespace SmartToggle.BusinessLogic
     public class CompanyBusinessLogic : ICompanyBusinessLogic
     {
         private readonly ICompanyRepository _companyRepository;
+        private readonly IServiceRepository _serviceRepository;
 
-        public CompanyBusinessLogic(ICompanyRepository companyRepository)
+        public CompanyBusinessLogic(ICompanyRepository companyRepository, IServiceRepository serviceRepository)
         {
             _companyRepository = companyRepository;
+            _serviceRepository = serviceRepository;
         }
 
         /// <summary>
@@ -106,6 +108,10 @@ namespace SmartToggle.BusinessLogic
             {
                 if (string.IsNullOrWhiteSpace(id))
                     throw new ArgumentException("Company ID cannot be null or empty.", nameof(id));
+
+                var services = await _serviceRepository.GetByCompanyIdAsync(id);
+                if (services != null && services.Any())
+                    throw new InvalidOperationException($"Cannot delete company '{id}' because it has associated services. Please delete all services for this company first.");
 
                 return await _companyRepository.DeleteAsync(id);
             }

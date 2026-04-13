@@ -8,10 +8,12 @@ namespace SmartToggle.BusinessLogic
     public class FeatureFlagBusinessLogic : IFeatureFlagBusinessLogic
     {
         private readonly IFeatureFlagRepository _featureFlagRepository;
+        private readonly IServiceRepository _serviceRepository;
 
-        public FeatureFlagBusinessLogic(IFeatureFlagRepository featureFlagRepository)
+        public FeatureFlagBusinessLogic(IFeatureFlagRepository featureFlagRepository, IServiceRepository serviceRepository)
         {
             _featureFlagRepository = featureFlagRepository;
+            _serviceRepository = serviceRepository;
         }
 
         /// <summary>
@@ -117,6 +119,13 @@ namespace SmartToggle.BusinessLogic
 
                 if (string.IsNullOrWhiteSpace(featureFlag.CompanyId))
                     throw new ArgumentException("Company ID is required.", nameof(featureFlag.CompanyId));
+
+                if (string.IsNullOrWhiteSpace(featureFlag.ServiceId))
+                    throw new ArgumentException("Service ID is required.", nameof(featureFlag.ServiceId));
+
+                var service = await _serviceRepository.GetByIdAsync(featureFlag.ServiceId);
+                if (service == null)
+                    throw new Exception($"Service with ID '{featureFlag.ServiceId}' does not exist.");
 
                 featureFlag.Id = Guid.NewGuid().ToString();
 
