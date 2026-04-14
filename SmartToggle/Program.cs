@@ -9,11 +9,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Configure Cosmos DB
-var cosmosConnectionString = builder.Configuration["CosmosDb:ConnectionString"];
-var cosmosDatabaseName = builder.Configuration["CosmosDb:DatabaseName"];
-var companiesContainerName = builder.Configuration["CosmosDb:CompaniesContainerName"];
-var servicesContainerName = builder.Configuration["CosmosDb:ServicesContainerName"];
-var featureFlagsContainerName = builder.Configuration["CosmosDb:FeatureFlagsContainerName"];
+var cosmosConnectionString = builder.Configuration["CosmosDb:ConnectionString"]!;
+var cosmosDatabaseName = builder.Configuration["CosmosDb:DatabaseName"]!;
+var companiesContainerName = builder.Configuration["CosmosDb:CompaniesContainerName"]!;
+var servicesContainerName = builder.Configuration["CosmosDb:ServicesContainerName"]!;
+var featureFlagsContainerName = builder.Configuration["CosmosDb:FeatureFlagsContainerName"]!;
 
 var cosmosClient = new CosmosClient(cosmosConnectionString);
 builder.Services.AddSingleton(cosmosClient);
@@ -36,11 +36,11 @@ builder.Services.AddScoped<IFeatureFlagBusinessLogic, FeatureFlagBusinessLogic>(
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-/*if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}*/
+}
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

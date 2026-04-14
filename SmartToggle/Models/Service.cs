@@ -1,24 +1,27 @@
-using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+
 namespace SmartToggle.Models
 {
     public class Service
     {
         [JsonProperty("id")]
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
+        [Required]
         [JsonProperty("companyId")]
-        public string CompanyId { get; set; }
+        public string CompanyId { get; set; } = string.Empty;
 
+        [Required]
         [JsonProperty("servicename")]
-        public string ServiceName { get; set; }
+        public string ServiceName { get; set; } = string.Empty;
 
+        [Required]
         [JsonProperty("description")]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         [JsonProperty("owners")]
-        public List<string> Owners { get; set; }
+        public List<string> Owners { get; set; } = new();
     }
 }

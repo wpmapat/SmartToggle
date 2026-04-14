@@ -22,16 +22,16 @@ namespace SmartToggle.Controllers
         /// Get all feature flags
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<IFeatureFlagBusinessLogic>>> GetAllFeatureFlags()
+        public async Task<ActionResult<IEnumerable<FeatureFlag<bool>>>> GetAllFeatureFlags()
         {
             try
             {
                 var flags = await _featureFlagService.GetAllFeatureFlagsAsync();
                 return Ok(flags);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(new { message = ex.Message });
+                return StatusCode(500, new { message = "An unexpected error occurred." });
             }
         }
 
@@ -39,19 +39,23 @@ namespace SmartToggle.Controllers
         /// Get feature flag by ID
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<IFeatureFlagBusinessLogic>> GetFeatureFlagById(string id, [FromQuery]string serviceId)
+        public async Task<ActionResult<FeatureFlag<bool>>> GetFeatureFlagById(string id, [FromQuery] string serviceId)
         {
             try
             {
-                var flag = await _featureFlagService.GetFeatureFlagByIdAsync(id,serviceId);
+                var flag = await _featureFlagService.GetFeatureFlagByIdAsync(id, serviceId);
                 if (flag == null)
                     return NotFound(new { message = "Feature flag not found" });
 
                 return Ok(flag);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred." });
             }
         }
 
@@ -59,7 +63,7 @@ namespace SmartToggle.Controllers
         /// Get feature flags by company ID
         /// </summary>
         [HttpGet("company/{companyId}")]
-        public async Task<ActionResult<IEnumerable<IFeatureFlagBusinessLogic>>> GetFeatureFlagsByCompanyId(string companyId)
+        public async Task<ActionResult<IEnumerable<FeatureFlag<bool>>>> GetFeatureFlagsByCompanyId(string companyId)
         {
             try
             {
@@ -69,9 +73,13 @@ namespace SmartToggle.Controllers
 
                 return Ok(flags);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred." });
             }
         }
 
@@ -79,7 +87,7 @@ namespace SmartToggle.Controllers
         /// Get feature flags by service ID
         /// </summary>
         [HttpGet("service/{serviceId}")]
-        public async Task<ActionResult<IEnumerable<IFeatureFlagBusinessLogic>>> GetFeatureFlagsByServiceId(string serviceId)
+        public async Task<ActionResult<IEnumerable<FeatureFlag<bool>>>> GetFeatureFlagsByServiceId(string serviceId)
         {
             try
             {
@@ -89,9 +97,13 @@ namespace SmartToggle.Controllers
 
                 return Ok(flags);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred." });
             }
         }
 
@@ -99,19 +111,23 @@ namespace SmartToggle.Controllers
         /// Get feature flag by flag ID
         /// </summary>
         [HttpGet("flag/{flagId}")]
-        public async Task<ActionResult<IFeatureFlagBusinessLogic>> GetFeatureFlagByFlagId(string flagId,[FromQuery]string serviceId)
+        public async Task<ActionResult<FeatureFlag<bool>>> GetFeatureFlagByFlagId(string flagId, [FromQuery] string serviceId)
         {
             try
             {
-                var flag = await _featureFlagService.GetFeatureFlagByIdAsync(flagId,serviceId);
+                var flag = await _featureFlagService.GetFeatureFlagByIdAsync(flagId, serviceId);
                 if (flag == null)
                     return NotFound(new { message = "Feature flag not found" });
 
                 return Ok(flag);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred." });
             }
         }
 
@@ -129,9 +145,13 @@ namespace SmartToggle.Controllers
                 var createdFlag = await _featureFlagService.CreateFeatureFlagAsync(featureFlag);
                 return CreatedAtAction(nameof(GetFeatureFlagById), new { id = createdFlag.Id }, createdFlag);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred." });
             }
         }
 
@@ -152,9 +172,13 @@ namespace SmartToggle.Controllers
 
                 return Ok(updatedFlag);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred." });
             }
         }
 
@@ -172,9 +196,13 @@ namespace SmartToggle.Controllers
 
                 return NoContent();
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred." });
             }
         }
     }
