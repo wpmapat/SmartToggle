@@ -147,6 +147,10 @@ namespace SmartToggle.BusinessLogic
 
                 return await _serviceRepository.DeleteAsync(id, service.CompanyId);
             }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 throw new Exception($"Error deleting service with ID: {id}", ex);
