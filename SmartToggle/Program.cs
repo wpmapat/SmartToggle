@@ -1,3 +1,4 @@
+using Azure.Identity;
 using Microsoft.Azure.Cosmos;
 using SmartToggle.BusinessLogic;
 
@@ -9,16 +10,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Configure Cosmos DB
-var cosmosConnectionString = builder.Configuration["CosmosDb:ConnectionString"];
+var cosmosAccountEndpoint = builder.Configuration["CosmosDb:AccountEndpoint"]!;
 var cosmosDatabaseName = builder.Configuration["CosmosDb:DatabaseName"]!;
 var companiesContainerName = builder.Configuration["CosmosDb:CompaniesContainerName"]!;
 var servicesContainerName = builder.Configuration["CosmosDb:ServicesContainerName"]!;
 var featureFlagsContainerName = builder.Configuration["CosmosDb:FeatureFlagsContainerName"]!;
 
-if (string.IsNullOrWhiteSpace(cosmosConnectionString))
-    throw new InvalidOperationException("CosmosDb:ConnectionString is not configured.");
-
-var cosmosClient = new CosmosClient(cosmosConnectionString);
+var cosmosClient = new CosmosClient(cosmosAccountEndpoint, new DefaultAzureCredential());
 builder.Services.AddSingleton(cosmosClient);
 
 // Register repositories
