@@ -9,11 +9,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Configure Cosmos DB
-var cosmosConnectionString = builder.Configuration["CosmosDb:ConnectionString"]!;
+var cosmosConnectionString = builder.Configuration["CosmosDb:ConnectionString"];
 var cosmosDatabaseName = builder.Configuration["CosmosDb:DatabaseName"]!;
 var companiesContainerName = builder.Configuration["CosmosDb:CompaniesContainerName"]!;
 var servicesContainerName = builder.Configuration["CosmosDb:ServicesContainerName"]!;
 var featureFlagsContainerName = builder.Configuration["CosmosDb:FeatureFlagsContainerName"]!;
+
+if (string.IsNullOrWhiteSpace(cosmosConnectionString))
+    throw new InvalidOperationException("CosmosDb:ConnectionString is not configured.");
 
 var cosmosClient = new CosmosClient(cosmosConnectionString);
 builder.Services.AddSingleton(cosmosClient);
