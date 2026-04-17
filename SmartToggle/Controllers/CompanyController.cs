@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartToggle.BusinessLogic;
 using SmartToggle.Models;
@@ -8,6 +9,7 @@ using SmartToggle.Models;
 
 namespace SmartToggle.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CompanyController : ControllerBase
