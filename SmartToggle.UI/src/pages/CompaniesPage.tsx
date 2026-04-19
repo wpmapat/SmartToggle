@@ -12,6 +12,7 @@ export default function CompaniesPage() {
     const { instance } = useMsal();
     const navigate = useNavigate();
     const [companies, setCompanies] = useState<Company[]>([]);
+    const [serviceCounts, setServiceCounts] = useState<Record<string, number>>({});
     const [newName, setNewName] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -20,7 +21,19 @@ export default function CompaniesPage() {
         try {
             const api = await createApiClient(instance);
             const response = await api.get("/api/company");
-            setCompanies(response.data);
+            const data: Company[] = response.data;
+            setCompanies(data);
+
+            const counts: Record<string, number> = {};
+            await Promise.all(data.map(async company => {
+                try {
+                    const res = await api.get(`/api/service/company/${company.id}`);
+                    counts[company.id] = res.data.length;
+                } catch {
+                    counts[company.id] = 0;
+                }
+            }));
+            setServiceCounts(counts);
         } catch {
             setError("Failed to load companies.");
         } finally {
@@ -56,6 +69,9 @@ export default function CompaniesPage() {
 
     return (
         <div>
+            <nav className="breadcrumb">
+                <span className="breadcrumb-current">Companies</span>
+            </nav>
             <h2>Companies</h2>
             {error && <p className="error">{error}</p>}
             <div className="add-form">
@@ -73,6 +89,7 @@ export default function CompaniesPage() {
                         <span onClick={() => navigate(`/companies/${company.id}/services`)} className="link">
                             {company.name}
                         </span>
+                        <span className="count-badge">{serviceCounts[company.id] ?? 0} {serviceCounts[company.id] === 1 ? "service" : "services"}</span>
                         <button className="delete-btn" onClick={() => deleteCompany(company.id)}>Delete</button>
                     </li>
                 ))}

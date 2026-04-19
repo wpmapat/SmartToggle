@@ -94,8 +94,14 @@ export default function FeatureFlagsPage() {
 
     return (
         <div>
-            <button className="back-btn" onClick={() => navigate(`/companies/${companyId}/services`)}>← Back to Services</button>
-            <h2>Feature Flags {serviceName && <span className="sub-heading">— {serviceName}</span>}</h2>
+            <nav className="breadcrumb">
+                <span className="breadcrumb-link" onClick={() => navigate("/companies")}>Companies</span>
+                <span className="breadcrumb-sep">›</span>
+                <span className="breadcrumb-link" onClick={() => navigate(`/companies/${companyId}/services`)}>{serviceName ? "Services" : "Services"}</span>
+                <span className="breadcrumb-sep">›</span>
+                <span className="breadcrumb-current">{serviceName || "Feature Flags"}</span>
+            </nav>
+            <h2>Feature Flags</h2>
             {error && <p className="error">{error}</p>}
             <div className="add-form">
                 <input

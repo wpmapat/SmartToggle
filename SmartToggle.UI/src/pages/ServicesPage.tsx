@@ -15,6 +15,7 @@ export default function ServicesPage() {
     const navigate = useNavigate();
     const [services, setServices] = useState<Service[]>([]);
     const [companyName, setCompanyName] = useState("");
+    const [flagCounts, setFlagCounts] = useState<Record<string, number>>({});
     const [newName, setNewName] = useState("");
     const [newDesc, setNewDesc] = useState("");
     const [loading, setLoading] = useState(true);
@@ -34,7 +35,19 @@ export default function ServicesPage() {
         try {
             const api = await createApiClient(instance);
             const response = await api.get(`/api/service/company/${companyId}`);
-            setServices(response.data);
+            const data: Service[] = response.data;
+            setServices(data);
+
+            const counts: Record<string, number> = {};
+            await Promise.all(data.map(async service => {
+                try {
+                    const res = await api.get(`/api/featureflag/service/${service.id}`);
+                    counts[service.id] = res.data.length;
+                } catch {
+                    counts[service.id] = 0;
+                }
+            }));
+            setFlagCounts(counts);
         } catch {
             setServices([]);
         } finally {
@@ -74,8 +87,12 @@ export default function ServicesPage() {
 
     return (
         <div>
-            <button className="back-btn" onClick={() => navigate("/companies")}>← Back to Companies</button>
-            <h2>Services {companyName && <span className="sub-heading">— {companyName}</span>}</h2>
+            <nav className="breadcrumb">
+                <span className="breadcrumb-link" onClick={() => navigate("/companies")}>Companies</span>
+                <span className="breadcrumb-sep">›</span>
+                <span className="breadcrumb-current">{companyName || "Services"}</span>
+            </nav>
+            <h2>Services</h2>
             {error && <p className="error">{error}</p>}
             <div className="add-form">
                 <input
@@ -99,6 +116,7 @@ export default function ServicesPage() {
                             {service.serviceName}
                         </span>
                         {service.description && <span className="item-description">{service.description}</span>}
+                        <span className="count-badge">{flagCounts[service.id] ?? 0} {flagCounts[service.id] === 1 ? "flag" : "flags"}</span>
                         <button className="delete-btn" onClick={() => deleteService(service.id)}>Delete</button>
                     </li>
                 ))}

@@ -37,30 +37,68 @@
 /* ── Login page ── */
 .login-container {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-    gap: 12px;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1e293b 0%, #1e40af 50%, #1e293b 100%);
 }
 
-.login-container h1 {
+.login-card {
+    background: white;
+    border-radius: 20px;
+    padding: 48px 40px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.login-logo {
+    font-size: 3rem;
+    margin-bottom: 8px;
+}
+
+.login-title {
     font-size: 2rem;
     font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 4px;
 }
 
-.login-container button {
-    margin-top: 12px;
-    padding: 10px 24px;
+.login-tagline {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2563eb;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 20px;
+}
+
+.login-description {
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0 0 32px;
+}
+
+.login-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 24px;
     background: #2563eb;
     color: white;
     border: none;
     border-radius: 8px;
     font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
+    transition: background 0.2s;
 }
 
-.login-container button:hover {
+.login-btn:hover {
     background: #1d4ed8;
 }
 
@@ -71,19 +109,31 @@
     color: #64748b;
 }
 
-/* ── Back button ── */
-.back-btn {
-    background: none;
-    border: none;
-    color: #2563eb;
-    font-size: 0.9rem;
-    cursor: pointer;
-    padding: 0;
+/* ── Breadcrumb ── */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     margin-bottom: 16px;
+    font-size: 0.875rem;
 }
 
-.back-btn:hover {
+.breadcrumb-link {
+    color: #2563eb;
+    cursor: pointer;
+}
+
+.breadcrumb-link:hover {
     text-decoration: underline;
+}
+
+.breadcrumb-sep {
+    color: #94a3b8;
+}
+
+.breadcrumb-current {
+    color: #475569;
+    font-weight: 500;
 }
 
 /* ── Add form ── */
@@ -125,17 +175,26 @@
     list-style: none;
     padding: 0;
     margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
 }
 
 .list-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 16px;
+    padding: 16px 20px;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    margin-bottom: 8px;
+    border-radius: 12px;
     background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.list-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.06);
+    transform: translateY(-2px);
 }
 
 .link {
@@ -159,6 +218,17 @@
     flex: 1;
     color: #64748b;
     font-size: 0.88rem;
+}
+
+/* ── Count badge ── */
+.count-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: #e2e8f0;
+    color: #475569;
+    white-space: nowrap;
 }
 
 /* ── Delete button ── */

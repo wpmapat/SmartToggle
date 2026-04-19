@@ -26,9 +26,19 @@ function App() {
     if (!isAuthenticated) {
         return (
             <div className="login-container">
-                <h1>SmartToggle</h1>
-                <p>Feature Flag Management</p>
-                <button onClick={handleLogin}>Sign in with Microsoft</button>
+                <div className="login-card">
+                    <div className="login-logo">⚡</div>
+                    <h1 className="login-title">SmartToggle</h1>
+                    <p className="login-tagline">Feature Flag Management</p>
+                    <p className="login-description">
+                        Control your features in real time. Enable or disable functionality
+                        across services without redeploying your application.
+                    </p>
+                    <button className="login-btn" onClick={handleLogin}>
+                        <img src="https://learn.microsoft.com/en-us/entra/identity-platform/media/howto-add-branding-in-apps/ms-symbollockup_mssymbol_19.svg" alt="" width="20" height="20" />
+                        Sign in with Microsoft
+                    </button>
+                </div>
             </div>
         );
     }
