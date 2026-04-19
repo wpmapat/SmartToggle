@@ -62,8 +62,7 @@ namespace SmartToggle.BusinessLogic
                 if (string.IsNullOrWhiteSpace(company.Name))
                     throw new ArgumentException("Company name is required.", nameof(company.Name));
 
-                //company.Id = Guid.NewGuid().ToString();
-                //company.CreatedAt = DateTime.UtcNow.ToString("o");
+                company.Id = Guid.NewGuid().ToString();
 
                 return await _companyRepository.AddAsync(company);
             }
