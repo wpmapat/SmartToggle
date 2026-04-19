@@ -17,9 +17,20 @@ export default function FeatureFlagsPage() {
     const { companyId, serviceId } = useParams<{ companyId: string; serviceId: string }>();
     const navigate = useNavigate();
     const [flags, setFlags] = useState<FeatureFlag[]>([]);
+    const [serviceName, setServiceName] = useState("");
     const [newFlagId, setNewFlagId] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+
+    const fetchServiceName = async () => {
+        try {
+            const api = await createApiClient(instance);
+            const response = await api.get(`/api/service/${serviceId}`);
+            setServiceName(response.data.serviceName);
+        } catch {
+            // service name is optional, ignore errors
+        }
+    };
 
     const fetchFlags = async () => {
         try {
@@ -74,14 +85,17 @@ export default function FeatureFlagsPage() {
         }
     };
 
-    useEffect(() => { fetchFlags(); }, []);
+    useEffect(() => {
+        fetchServiceName();
+        fetchFlags();
+    }, []);
 
     if (loading) return <p>Loading...</p>;
 
     return (
         <div>
             <button className="back-btn" onClick={() => navigate(`/companies/${companyId}/services`)}>← Back to Services</button>
-            <h2>Feature Flags</h2>
+            <h2>Feature Flags {serviceName && <span className="sub-heading">— {serviceName}</span>}</h2>
             {error && <p className="error">{error}</p>}
             <div className="add-form">
                 <input

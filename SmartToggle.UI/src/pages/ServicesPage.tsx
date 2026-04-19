@@ -14,10 +14,21 @@ export default function ServicesPage() {
     const { companyId } = useParams<{ companyId: string }>();
     const navigate = useNavigate();
     const [services, setServices] = useState<Service[]>([]);
+    const [companyName, setCompanyName] = useState("");
     const [newName, setNewName] = useState("");
     const [newDesc, setNewDesc] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+
+    const fetchCompanyName = async () => {
+        try {
+            const api = await createApiClient(instance);
+            const response = await api.get(`/api/company/${companyId}`);
+            setCompanyName(response.data.name);
+        } catch {
+            // company name is optional, ignore errors
+        }
+    };
 
     const fetchServices = async () => {
         try {
@@ -54,14 +65,17 @@ export default function ServicesPage() {
         }
     };
 
-    useEffect(() => { fetchServices(); }, []);
+    useEffect(() => {
+        fetchCompanyName();
+        fetchServices();
+    }, []);
 
     if (loading) return <p>Loading...</p>;
 
     return (
         <div>
             <button className="back-btn" onClick={() => navigate("/companies")}>← Back to Companies</button>
-            <h2>Services</h2>
+            <h2>Services {companyName && <span className="sub-heading">— {companyName}</span>}</h2>
             {error && <p className="error">{error}</p>}
             <div className="add-form">
                 <input
@@ -84,6 +98,7 @@ export default function ServicesPage() {
                         <span onClick={() => navigate(`/companies/${companyId}/services/${service.id}/flags`)} className="link">
                             {service.serviceName}
                         </span>
+                        {service.description && <span className="item-description">{service.description}</span>}
                         <button className="delete-btn" onClick={() => deleteService(service.id)}>Delete</button>
                     </li>
                 ))}
