@@ -23,9 +23,20 @@ namespace SmartToggle.Controllers
         }
 
         private string GetOwnerId() =>
-            User.FindFirstValue("http://schemas.microsoft.com/identity/claims/objectidentifier")
+            User.FindFirstValue("oid")
+            ?? User.FindFirstValue("http://schemas.microsoft.com/identity/claims/objectidentifier")
             ?? User.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? string.Empty;
+
+        /// <summary>
+        /// Debug: get current user claims
+        /// </summary>
+        [HttpGet("debug/claims")]
+        public IActionResult GetClaims()
+        {
+            var claims = User.Claims.Select(c => new { c.Type, c.Value });
+            return Ok(claims);
+        }
 
         /// <summary>
         /// Get all companies
