@@ -51,7 +51,16 @@ namespace SmartToggle.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = ex.Message, inner = ex.InnerException?.Message, inner2 = ex.InnerException?.InnerException?.Message });
+                var inner = ex.InnerException;
+                return StatusCode(500, new {
+                    message = ex.Message,
+                    type = ex.GetType().Name,
+                    inner = inner?.Message,
+                    innerType = inner?.GetType().Name,
+                    inner2 = inner?.InnerException?.Message,
+                    inner2Type = inner?.InnerException?.GetType().Name,
+                    ownerId = GetOwnerId()
+                });
             }
         }
 
