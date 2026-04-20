@@ -13,6 +13,9 @@ namespace SmartToggle.Models
         [JsonProperty("name")]
         public string Name { get; set; } = string.Empty;
 
+        [JsonProperty("ownerId")]
+        public string OwnerId { get; set; } = string.Empty;
+
         [JsonProperty("services")]
         public List<Service> Services { get; set; } = new();
     }

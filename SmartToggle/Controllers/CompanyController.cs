@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,11 @@ namespace SmartToggle.Controllers
             _companyService = companyService;
         }
 
+        private string GetOwnerId() =>
+            User.FindFirstValue("http://schemas.microsoft.com/identity/claims/objectidentifier")
+            ?? User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? string.Empty;
+
         /// <summary>
         /// Get all companies
         /// </summary>
@@ -29,7 +35,7 @@ namespace SmartToggle.Controllers
         {
             try
             {
-                var companies = await _companyService.GetAllCompaniesAsync();
+                var companies = await _companyService.GetAllCompaniesAsync(GetOwnerId());
                 return Ok(companies);
             }
             catch (Exception)
@@ -73,7 +79,7 @@ namespace SmartToggle.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                var createdCompany = await _companyService.CreateCompanyAsync(company);
+                var createdCompany = await _companyService.CreateCompanyAsync(company, GetOwnerId());
                 return CreatedAtAction(nameof(GetCompanyById), new { id = createdCompany.Id }, createdCompany);
             }
             catch (ArgumentException ex)

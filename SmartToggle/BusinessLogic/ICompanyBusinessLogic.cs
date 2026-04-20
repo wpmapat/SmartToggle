@@ -7,10 +7,10 @@ namespace SmartToggle.BusinessLogic
 {
     public interface ICompanyBusinessLogic
     {
-        Task<IEnumerable<Company>> GetAllCompaniesAsync();
+        Task<IEnumerable<Company>> GetAllCompaniesAsync(string ownerId);
         Task<Company?> GetCompanyByIdAsync(string id);
         Task<IEnumerable<Company>> GetCompaniesByNameAsync(string name);
-        Task<Company> CreateCompanyAsync(Company company);
+        Task<Company> CreateCompanyAsync(Company company, string ownerId);
         Task<Company?> UpdateCompanyAsync(string id, Company company);
         Task<bool> DeleteCompanyAsync(string id);
     }

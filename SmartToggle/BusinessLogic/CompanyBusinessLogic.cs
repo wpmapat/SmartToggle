@@ -17,13 +17,13 @@ namespace SmartToggle.BusinessLogic
         }
 
         /// <summary>
-        /// Get all companies
+        /// Get all companies for a specific owner
         /// </summary>
-        public async Task<IEnumerable<Company>> GetAllCompaniesAsync()
+        public async Task<IEnumerable<Company>> GetAllCompaniesAsync(string ownerId)
         {
             try
             {
-                return await _companyRepository.GetAllAsync();
+                return await _companyRepository.GetByOwnerIdAsync(ownerId);
             }
             catch (Exception ex)
             {
@@ -52,7 +52,7 @@ namespace SmartToggle.BusinessLogic
         /// <summary>
         /// Create a new company
         /// </summary>
-        public async Task<Company> CreateCompanyAsync(Company company)
+        public async Task<Company> CreateCompanyAsync(Company company, string ownerId)
         {
             try
             {
@@ -63,6 +63,7 @@ namespace SmartToggle.BusinessLogic
                     throw new ArgumentException("Company name is required.", nameof(company.Name));
 
                 company.Id = Guid.NewGuid().ToString();
+                company.OwnerId = ownerId;
 
                 return await _companyRepository.AddAsync(company);
             }

@@ -44,6 +44,33 @@ namespace SmartToggle.BusinessLogic
         }
 
         /// <summary>
+        /// Get companies by owner ID from Cosmos DB
+        /// </summary>
+        public async Task<IEnumerable<Company>> GetByOwnerIdAsync(string ownerId)
+        {
+            try
+            {
+                var query = _container.GetItemQueryIterator<Company>(
+                    new QueryDefinition("SELECT * FROM c WHERE c.ownerId = @ownerId")
+                        .WithParameter("@ownerId", ownerId));
+
+                var companies = new List<Company>();
+
+                while (query.HasMoreResults)
+                {
+                    var response = await query.ReadNextAsync();
+                    companies.AddRange(response);
+                }
+
+                return companies;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error retrieving companies by owner from Cosmos DB.", ex);
+            }
+        }
+
+        /// <summary>
         /// Get company by ID from Cosmos DB
         /// </summary>
         public async Task<Company?> GetByIdAsync(string id)
