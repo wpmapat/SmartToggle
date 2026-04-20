@@ -49,9 +49,9 @@ namespace SmartToggle.Controllers
                 var companies = await _companyService.GetAllCompaniesAsync(GetOwnerId());
                 return Ok(companies);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An unexpected error occurred." });
+                return StatusCode(500, new { message = ex.Message, inner = ex.InnerException?.Message });
             }
         }
 
