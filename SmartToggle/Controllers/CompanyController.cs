@@ -29,16 +29,6 @@ namespace SmartToggle.Controllers
             ?? string.Empty;
 
         /// <summary>
-        /// Debug: get current user claims
-        /// </summary>
-        [HttpGet("debug/claims")]
-        public IActionResult GetClaims()
-        {
-            var claims = User.Claims.Select(c => new { c.Type, c.Value });
-            return Ok(claims);
-        }
-
-        /// <summary>
         /// Get all companies
         /// </summary>
         [HttpGet]
@@ -49,18 +39,9 @@ namespace SmartToggle.Controllers
                 var companies = await _companyService.GetAllCompaniesAsync(GetOwnerId());
                 return Ok(companies);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                var inner = ex.InnerException;
-                return StatusCode(500, new {
-                    message = ex.Message,
-                    type = ex.GetType().Name,
-                    inner = inner?.Message,
-                    innerType = inner?.GetType().Name,
-                    inner2 = inner?.InnerException?.Message,
-                    inner2Type = inner?.InnerException?.GetType().Name,
-                    ownerId = GetOwnerId()
-                });
+                return StatusCode(500, new { message = "An unexpected error occurred." });
             }
         }
 
