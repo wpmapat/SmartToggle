@@ -49,18 +49,18 @@ namespace SmartToggle.Tests
             var company = new Company { Name = "" };
 
             await Assert.ThrowsAsync<System.Exception>(
-                () => _sut.CreateCompanyAsync(company));
+                () => _sut.CreateCompanyAsync(company, "owner-1"));
         }
 
         [Fact]
         public async Task CreateCompanyAsync_WhenValid_ReturnsCreatedCompany()
         {
             var company = new Company { Name = "Test Co" };
-            var created = new Company { Id = "company-1", Name = "Test Co" };
+            var created = new Company { Id = "company-1", Name = "Test Co", OwnerId = "owner-1" };
 
             _companyRepo.Setup(r => r.AddAsync(It.IsAny<Company>())).ReturnsAsync(created);
 
-            var result = await _sut.CreateCompanyAsync(company);
+            var result = await _sut.CreateCompanyAsync(company, "owner-1");
 
             Assert.NotNull(result);
             Assert.Equal("company-1", result.Id);
