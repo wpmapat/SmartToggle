@@ -5,6 +5,7 @@ import { loginRequest } from "./authConfig";
 import CompaniesPage from "./pages/CompaniesPage";
 import ServicesPage from "./pages/ServicesPage";
 import FeatureFlagsPage from "./pages/FeatureFlagsPage";
+import DemoServicePage from "./pages/DemoServicePage";
 import "./App.css";
 
 function App() {
@@ -24,6 +25,9 @@ function App() {
     };
 
     if (!isAuthenticated) {
+        if (window.location.pathname === "/demo") {
+            return <DemoServicePage />;
+        }
         return (
             <div className="login-container">
                 <div className="login-card">
@@ -47,7 +51,10 @@ function App() {
         <BrowserRouter>
             <nav className="navbar">
                 <span className="nav-brand">SmartToggle</span>
-                <button onClick={handleLogout}>Sign out</button>
+                <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                    <button onClick={() => window.location.href = "/demo"} style={{ background: "#7c3aed", border: "none", color: "white", padding: "6px 14px", borderRadius: "6px", cursor: "pointer" }}>Demo Service</button>
+                    <button onClick={handleLogout}>Sign out</button>
+                </div>
             </nav>
             <div className="container">
                 <Routes>
@@ -55,6 +62,7 @@ function App() {
                     <Route path="/companies" element={<CompaniesPage />} />
                     <Route path="/companies/:companyId/services" element={<ServicesPage />} />
                     <Route path="/companies/:companyId/services/:serviceId/flags" element={<FeatureFlagsPage />} />
+                    <Route path="/demo" element={<DemoServicePage />} />
                 </Routes>
             </div>
         </BrowserRouter>

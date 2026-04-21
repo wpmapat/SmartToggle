@@ -55,4 +55,11 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+app.MapGet("/api/public/featureflags/{serviceId}", async (string serviceId, IFeatureFlagBusinessLogic flagService) =>
+{
+    var flags = await flagService.GetFeatureFlagsByServiceIdAsync(serviceId);
+    return flags != null && flags.Any() ? Results.Ok(flags) : Results.NotFound(new { message = "No flags found" });
+}).AllowAnonymous();
+
 app.Run();

@@ -86,8 +86,9 @@ namespace SmartToggle.Controllers
         }
 
         /// <summary>
-        /// Get feature flags by service ID
+        /// Get feature flags by service ID (public — readable by any authenticated service or anonymously)
         /// </summary>
+        [AllowAnonymous]
         [HttpGet("service/{serviceId}")]
         public async Task<ActionResult<IEnumerable<FeatureFlag<bool>>>> GetFeatureFlagsByServiceId(string serviceId)
         {
