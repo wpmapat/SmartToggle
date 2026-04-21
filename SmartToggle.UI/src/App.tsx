@@ -52,7 +52,7 @@ function App() {
             <nav className="navbar">
                 <span className="nav-brand">SmartToggle</span>
                 <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                    <button onClick={() => window.location.href = "/demo"} style={{ background: "#7c3aed", border: "none", color: "white", padding: "6px 14px", borderRadius: "6px", cursor: "pointer" }}>Demo Service</button>
+                    <button onClick={() => window.location.href = "/demo"} style={{ background: "#7c3aed", border: "none", color: "white", padding: "6px 14px", borderRadius: "6px", cursor: "pointer" }}>Live Demo</button>
                     <button onClick={handleLogout}>Sign out</button>
                 </div>
             </nav>

@@ -8,6 +8,11 @@ interface Company {
     name: string;
 }
 
+function avatarColor(name: string) {
+    const index = name.charCodeAt(0) % 8;
+    return `color-${index}`;
+}
+
 export default function CompaniesPage() {
     const { instance } = useMsal();
     const navigate = useNavigate();
@@ -86,6 +91,7 @@ export default function CompaniesPage() {
             <ul className="list">
                 {companies.map(company => (
                     <li key={company.id} className="list-item">
+                        <span className={`item-avatar ${avatarColor(company.name)}`}>{company.name.charAt(0).toUpperCase()}</span>
                         <span onClick={() => navigate(`/companies/${company.id}/services`)} className="link">
                             {company.name}
                         </span>

@@ -18,6 +18,7 @@ export default function FeatureFlagsPage() {
     const navigate = useNavigate();
     const [flags, setFlags] = useState<FeatureFlag[]>([]);
     const [serviceName, setServiceName] = useState("");
+    const [companyName, setCompanyName] = useState("");
     const [newFlagId, setNewFlagId] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -25,10 +26,14 @@ export default function FeatureFlagsPage() {
     const fetchServiceName = async () => {
         try {
             const api = await createApiClient(instance);
-            const response = await api.get(`/api/service/${serviceId}`);
-            setServiceName(response.data.serviceName);
+            const [serviceRes, companyRes] = await Promise.all([
+                api.get(`/api/service/${serviceId}`),
+                api.get(`/api/company/${companyId}`),
+            ]);
+            setServiceName(serviceRes.data.serviceName);
+            setCompanyName(companyRes.data.name);
         } catch {
-            // service name is optional, ignore errors
+            // names are optional, ignore errors
         }
     };
 
@@ -97,7 +102,7 @@ export default function FeatureFlagsPage() {
             <nav className="breadcrumb">
                 <span className="breadcrumb-link" onClick={() => navigate("/companies")}>Companies</span>
                 <span className="breadcrumb-sep">›</span>
-                <span className="breadcrumb-link" onClick={() => navigate(`/companies/${companyId}/services`)}>{serviceName ? "Services" : "Services"}</span>
+                <span className="breadcrumb-link" onClick={() => navigate(`/companies/${companyId}/services`)}>{companyName || "Services"}</span>
                 <span className="breadcrumb-sep">›</span>
                 <span className="breadcrumb-current">{serviceName || "Feature Flags"}</span>
             </nav>
@@ -115,6 +120,7 @@ export default function FeatureFlagsPage() {
             <ul className="list">
                 {flags.map(flag => (
                     <li key={flag.id} className="list-item">
+                        <span className={`item-avatar flag${flag.defaultValue ? "" : " off"}`}>⚑</span>
                         <span className="flag-name">{flag.flagId}</span>
                         <label className="toggle">
                             <input

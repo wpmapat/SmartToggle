@@ -200,9 +200,13 @@
 
 .link {
     flex: 1;
+    min-width: 0;
     color: #2563eb;
     cursor: pointer;
     font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .link:hover {
@@ -231,10 +235,48 @@
     font-weight: 600;
     padding: 2px 8px;
     border-radius: 12px;
-    background: #e2e8f0;
-    color: #475569;
+    background: #dbeafe;
+    color: #1d4ed8;
     white-space: nowrap;
+    flex-shrink: 0;
 }
+
+/* ── Item avatar ── */
+.item-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.item-avatar.service {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+.item-avatar.flag {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.item-avatar.flag.off {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.item-avatar.color-0 { background: #dbeafe; color: #1d4ed8; }
+.item-avatar.color-1 { background: #ede9fe; color: #7c3aed; }
+.item-avatar.color-2 { background: #fce7f3; color: #be185d; }
+.item-avatar.color-3 { background: #dcfce7; color: #15803d; }
+.item-avatar.color-4 { background: #ffedd5; color: #c2410c; }
+.item-avatar.color-5 { background: #ccfbf1; color: #0f766e; }
+.item-avatar.color-6 { background: #fef9c3; color: #a16207; }
+.item-avatar.color-7 { background: #fee2e2; color: #dc2626; }
 
 /* ── Delete button ── */
 .delete-btn {

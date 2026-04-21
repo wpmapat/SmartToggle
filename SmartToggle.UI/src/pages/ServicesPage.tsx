@@ -9,6 +9,11 @@ interface Service {
     description: string;
 }
 
+function avatarColor(name: string) {
+    const index = name.charCodeAt(0) % 8;
+    return `color-${index}`;
+}
+
 export default function ServicesPage() {
     const { instance } = useMsal();
     const { companyId } = useParams<{ companyId: string }>();
@@ -112,6 +117,7 @@ export default function ServicesPage() {
             <ul className="list">
                 {services.map(service => (
                     <li key={service.id} className="list-item">
+                        <span className={`item-avatar ${avatarColor(service.serviceName)}`}>{service.serviceName.charAt(0).toUpperCase()}</span>
                         <span onClick={() => navigate(`/companies/${companyId}/services/${service.id}/flags`)} className="link">
                             {service.serviceName}
                         </span>
