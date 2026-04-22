@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-const SERVICE_ID = "2904c6b6-1c92-4f42-830d-bd11a2909638";
-const COMPANY_ID = "e7ec5022-291b-4b7c-8d64-413a81696733";
+const SERVICE_ID = "c848db6e-7782-477b-bc84-a67dca9f8ef3";
+const COMPANY_ID = "9eff8c48-00fc-4b4e-9ccf-838c0f0f4bcb";
 const API_BASE = "https://smarttoggle-api.azurewebsites.net";
 
 interface FeatureFlag {

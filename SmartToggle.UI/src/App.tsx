@@ -38,6 +38,11 @@ function AuthenticatedApp() {
                     },
                     body: JSON.stringify({ companyName: orgName }),
                 });
+                if (!provisionRes.ok) {
+                    const errBody = await provisionRes.text();
+                    console.error("Provision API error:", provisionRes.status, errBody);
+                    return;
+                }
                 const company = await provisionRes.json();
                 setCompanyName(company.name);
                 navigate(`/companies/${company.id}/services`);
