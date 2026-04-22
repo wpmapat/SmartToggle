@@ -37,7 +37,11 @@ export default function DemoServicePage() {
         }
     };
 
-    useEffect(() => { loadFlags(); }, []);
+    useEffect(() => {
+        loadFlags();
+        const interval = setInterval(() => loadFlags(true), 10000);
+        return () => clearInterval(interval);
+    }, []);
 
     const isDarkTheme = flags["dark-theme"] ?? false;
     const isLargeFont = flags["large-font"] ?? false;
@@ -96,7 +100,7 @@ export default function DemoServicePage() {
                         {[
                             "Click \"Manage flags in SmartToggle\" below",
                             "Toggle dark-theme or large-font on or off",
-                            "Come back and click Refresh Flags — the UI updates instantly",
+                            "Come back — the page auto-refreshes every 10 seconds",
                         ].map((step, i) => (
                             <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                                 <span style={{
