@@ -126,6 +126,32 @@ namespace SmartToggle.BusinessLogic
         }
 
         /// <summary>
+        /// Provision a company for a tenant — creates if not exists, returns existing if already provisioned
+        /// </summary>
+        public async Task<Company> ProvisionCompanyAsync(string tenantId, string companyName)
+        {
+            try
+            {
+                var existing = await _companyRepository.GetByIdAsync(tenantId);
+                if (existing != null)
+                    return existing;
+
+                var company = new Company
+                {
+                    Id = tenantId,
+                    Name = companyName,
+                    OwnerId = tenantId
+                };
+
+                return await _companyRepository.AddAsync(company);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error provisioning company.", ex);
+            }
+        }
+
+        /// <summary>
         /// Get companies by name
         /// </summary>
         public async Task<IEnumerable<Company>> GetCompaniesByNameAsync(string name)

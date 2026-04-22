@@ -10,6 +10,8 @@ using SmartToggle.Models;
 
 namespace SmartToggle.Controllers
 {
+    public record ProvisionRequest(string CompanyName);
+
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
@@ -27,6 +29,32 @@ namespace SmartToggle.Controllers
             ?? User.FindFirstValue("http://schemas.microsoft.com/identity/claims/objectidentifier")
             ?? User.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? string.Empty;
+
+        private string GetTenantId() =>
+            User.FindFirstValue("tid")
+            ?? User.FindFirstValue("http://schemas.microsoft.com/identity/claims/tenantid")
+            ?? string.Empty;
+
+        /// <summary>
+        /// Provision a company for the current tenant — call on first login
+        /// </summary>
+        [HttpPost("provision")]
+        public async Task<ActionResult<Company>> ProvisionCompany([FromBody] ProvisionRequest request)
+        {
+            try
+            {
+                var tenantId = GetTenantId();
+                if (string.IsNullOrEmpty(tenantId))
+                    return BadRequest(new { message = "Tenant ID not found in token." });
+
+                var company = await _companyService.ProvisionCompanyAsync(tenantId, request.CompanyName);
+                return Ok(company);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred." });
+            }
+        }
 
         /// <summary>
         /// Get all companies
