@@ -100,8 +100,6 @@ export default function FeatureFlagsPage() {
     return (
         <div>
             <nav className="breadcrumb">
-                <span className="breadcrumb-link" onClick={() => navigate("/companies")}>Companies</span>
-                <span className="breadcrumb-sep">›</span>
                 <span className="breadcrumb-link" onClick={() => navigate(`/companies/${companyId}/services`)}>{companyName || "Services"}</span>
                 <span className="breadcrumb-sep">›</span>
                 <span className="breadcrumb-current">{serviceName || "Feature Flags"}</span>

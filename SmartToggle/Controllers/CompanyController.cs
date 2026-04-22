@@ -35,6 +35,8 @@ namespace SmartToggle.Controllers
             ?? User.FindFirstValue("http://schemas.microsoft.com/identity/claims/tenantid")
             ?? string.Empty;
 
+        private string GetScopeId() => GetTenantId();
+
         /// <summary>
         /// Provision a company for the current tenant — call on first login
         /// </summary>
@@ -64,7 +66,7 @@ namespace SmartToggle.Controllers
         {
             try
             {
-                var companies = await _companyService.GetAllCompaniesAsync(GetOwnerId());
+                var companies = await _companyService.GetAllCompaniesAsync(GetScopeId());
                 return Ok(companies);
             }
             catch (Exception)
@@ -108,7 +110,7 @@ namespace SmartToggle.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                var createdCompany = await _companyService.CreateCompanyAsync(company, GetOwnerId());
+                var createdCompany = await _companyService.CreateCompanyAsync(company, GetScopeId());
                 return CreatedAtAction(nameof(GetCompanyById), new { id = createdCompany.Id }, createdCompany);
             }
             catch (ArgumentException ex)

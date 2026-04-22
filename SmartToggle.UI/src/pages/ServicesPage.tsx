@@ -93,8 +93,6 @@ export default function ServicesPage() {
     return (
         <div>
             <nav className="breadcrumb">
-                <span className="breadcrumb-link" onClick={() => navigate("/companies")}>Companies</span>
-                <span className="breadcrumb-sep">›</span>
                 <span className="breadcrumb-current">{companyName || "Services"}</span>
             </nav>
             <h2>Services</h2>
