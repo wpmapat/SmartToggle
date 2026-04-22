@@ -16,20 +16,22 @@ function AuthenticatedApp() {
     useEffect(() => {
         const provision = async () => {
             try {
-                const graphToken = await instance.acquireTokenSilent({
-                    ...graphRequest,
-                    account: instance.getAllAccounts()[0],
-                });
-                const graphRes = await fetch("https://graph.microsoft.com/v1.0/organization", {
-                    headers: { Authorization: `Bearer ${graphToken.accessToken}` },
-                });
-                const graphData = await graphRes.json();
-                const orgName = graphData.value?.[0]?.displayName ?? "My Organization";
+                const account = instance.getAllAccounts()[0];
 
-                const apiToken = await instance.acquireTokenSilent({
-                    ...loginRequest,
-                    account: instance.getAllAccounts()[0],
-                });
+                // Try to get org name from Graph — fall back gracefully if consent not granted
+                let orgName = "My Organization";
+                try {
+                    const graphToken = await instance.acquireTokenSilent({ ...graphRequest, account });
+                    const graphRes = await fetch("https://graph.microsoft.com/v1.0/organization", {
+                        headers: { Authorization: `Bearer ${graphToken.accessToken}` },
+                    });
+                    const graphData = await graphRes.json();
+                    orgName = graphData.value?.[0]?.displayName ?? orgName;
+                } catch {
+                    // Graph consent not granted in this tenant — use fallback name
+                }
+
+                const apiToken = await instance.acquireTokenSilent({ ...loginRequest, account });
                 const provisionRes = await fetch(`${apiBaseUrl}/api/company/provision`, {
                     method: "POST",
                     headers: {
@@ -39,8 +41,7 @@ function AuthenticatedApp() {
                     body: JSON.stringify({ companyName: orgName }),
                 });
                 if (!provisionRes.ok) {
-                    const errBody = await provisionRes.text();
-                    console.error("Provision API error:", provisionRes.status, errBody);
+                    console.error("Provision API error:", provisionRes.status, await provisionRes.text());
                     return;
                 }
                 const company = await provisionRes.json();
