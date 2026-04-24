@@ -134,7 +134,14 @@ namespace SmartToggle.BusinessLogic
             {
                 var existing = await _companyRepository.GetByIdAsync(tenantId);
                 if (existing != null)
+                {
+                    if (!string.IsNullOrEmpty(companyName) && companyName != "My Organization" && existing.Name == "My Organization")
+                    {
+                        existing.Name = companyName;
+                        await _companyRepository.UpdateAsync(existing);
+                    }
                     return existing;
+                }
 
                 var company = new Company
                 {
