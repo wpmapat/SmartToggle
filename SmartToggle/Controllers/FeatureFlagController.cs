@@ -86,6 +86,30 @@ namespace SmartToggle.Controllers
         }
 
         /// <summary>
+        /// Get feature flags for the calling app — uses appid (service ID) and tid (company ID) from token
+        /// </summary>
+        [Authorize(Policy = "ReadFeatureFlags")]
+        [HttpGet("my-flags")]
+        public async Task<ActionResult<IEnumerable<FeatureFlag<bool>>>> GetMyFlags()
+        {
+            try
+            {
+                var serviceId = User.FindFirst("appid")?.Value;
+                var companyId = User.FindFirst("tid")?.Value;
+
+                if (string.IsNullOrEmpty(serviceId) || string.IsNullOrEmpty(companyId))
+                    return BadRequest(new { message = "Token must contain appid and tid claims." });
+
+                var flags = await _featureFlagService.GetFeatureFlagsByServiceIdAsync(serviceId);
+                return Ok(flags ?? Enumerable.Empty<FeatureFlag<bool>>());
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred." });
+            }
+        }
+
+        /// <summary>
         /// Get feature flags by service ID — readable by users or apps with FeatureFlags.Read role
         /// </summary>
         [Authorize(Policy = "ReadFeatureFlags")]

@@ -23,6 +23,7 @@ export default function ServicesPage() {
     const [flagCounts, setFlagCounts] = useState<Record<string, number>>({});
     const [newName, setNewName] = useState("");
     const [newDesc, setNewDesc] = useState("");
+    const [newServiceId, setNewServiceId] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -64,9 +65,10 @@ export default function ServicesPage() {
         if (!newName.trim()) return;
         try {
             const api = await createApiClient(instance);
-            await api.post("/api/service", { serviceName: newName, description: newDesc, companyId });
+            await api.post("/api/service", { id: newServiceId || undefined, serviceName: newName, description: newDesc, companyId });
             setNewName("");
             setNewDesc("");
+            setNewServiceId("");
             fetchServices();
         } catch {
             setError("Failed to create service.");
@@ -109,6 +111,12 @@ export default function ServicesPage() {
                     placeholder="Description"
                     value={newDesc}
                     onChange={e => setNewDesc(e.target.value)}
+                />
+                <input
+                    type="text"
+                    placeholder="Service ID (optional — use Azure AD app client ID)"
+                    value={newServiceId}
+                    onChange={e => setNewServiceId(e.target.value)}
                 />
                 <button onClick={createService}>Add Service</button>
             </div>

@@ -26,8 +26,8 @@ async Task<string> GetToken()
     return tokenResult.AccessToken;
 }
 
-// Returns all services with their flags for this tenant
-app.MapGet("/api/services-with-flags", async (IHttpClientFactory httpClientFactory) =>
+// Returns feature flags for this app — SmartToggle identifies service by appid claim in token
+app.MapGet("/api/flags", async (IHttpClientFactory httpClientFactory) =>
 {
     try
     {
@@ -36,27 +36,12 @@ app.MapGet("/api/services-with-flags", async (IHttpClientFactory httpClientFacto
         client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        // Get all services for this tenant (company ID = tenant ID)
-        var servicesRes = await client.GetAsync($"{smartToggleApiBase}/api/service/company/{tenantId}");
-        if (!servicesRes.IsSuccessStatusCode)
+        var response = await client.GetAsync($"{smartToggleApiBase}/api/featureflag/my-flags");
+        if (!response.IsSuccessStatusCode)
             return Results.Ok(new List<object>());
 
-        var services = await servicesRes.Content.ReadFromJsonAsync<List<ServiceInfo>>();
-        if (services == null || services.Count == 0)
-            return Results.Ok(new List<object>());
-
-        // Get flags for each service in parallel
-        var tasks = services.Select(async svc =>
-        {
-            var flagsRes = await client.GetAsync($"{smartToggleApiBase}/api/featureflag/service/{svc.Id}");
-            var flags = flagsRes.IsSuccessStatusCode
-                ? await flagsRes.Content.ReadFromJsonAsync<List<FeatureFlag>>() ?? []
-                : [];
-            return new { svc.Id, svc.ServiceName, Flags = flags };
-        });
-
-        var result = await Task.WhenAll(tasks);
-        return Results.Ok(result);
+        var flags = await response.Content.ReadFromJsonAsync<List<FeatureFlag>>();
+        return Results.Ok(flags);
     }
     catch
     {
@@ -70,7 +55,6 @@ app.MapGet("/", () => Results.Content(DemoPage.Html, "text/html"));
 app.Run();
 
 record FeatureFlag(string FlagId, bool DefaultValue);
-record ServiceInfo(string Id, string ServiceName);
 
 static class DemoPage
 {
@@ -226,15 +210,6 @@ static class DemoPage
 
                 a.manage-link:hover { background: #6d28d9; }
 
-                .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-                .tab {
-                    padding: 8px 16px; border-radius: 8px; cursor: pointer;
-                    background: #1e293b; border: 1px solid #334155; color: #94a3b8;
-                    font-size: 0.9rem; transition: all 0.2s;
-                }
-                .tab.active { background: #7c3aed; border-color: #7c3aed; color: white; }
-                body.light-theme .tab { background: #f1f5f9; border-color: #e2e8f0; color: #475569; }
-                body.light-theme .tab.active { background: #7c3aed; color: white; }
             </style>
         </head>
         <body id="demoBody">
@@ -248,9 +223,8 @@ static class DemoPage
                 </header>
 
                 <div class="card">
-                    <h2>Services</h2>
-                    <div class="tabs" id="tabs"></div>
-                    <div id="flagList"><p style="color:#64748b">Loading...</p></div>
+                    <h2>Active Feature Flags</h2>
+                    <div id="flagList"><p style="color:#64748b">Loading flags...</p></div>
                 </div>
 
                 <div class="demo-area" id="demoArea">
@@ -263,7 +237,6 @@ static class DemoPage
                     <ol>
                         <li>Feature flags are stored in <strong>Azure Cosmos DB</strong></li>
                         <li>This app (Tenant B) authenticates to SmartToggle API (Tenant A) using <strong>OAuth2 client credentials</strong></li>
-                        <li>Services are discovered dynamically — no hardcoded service IDs</li>
                         <li>This page polls the <strong>SmartToggle API</strong> every 10 seconds</li>
                         <li>Toggle a flag in SmartToggle → this page updates automatically</li>
                     </ol>
@@ -277,75 +250,39 @@ static class DemoPage
             </div>
 
             <script>
-                let allServices = [];
-                let selectedServiceId = null;
-
-                async function loadServices() {
+                async function loadFlags() {
                     try {
-                        const res = await fetch('/api/services-with-flags');
-                        allServices = await res.json();
+                        const res = await fetch('/api/flags');
+                        const flags = await res.json();
+                        const body = document.getElementById('demoBody');
+                        const flagList = document.getElementById('flagList');
 
-                        if (!allServices.length) {
-                            document.getElementById('flagList').innerHTML =
-                                '<p style="color:#64748b">No services found. Create a service in SmartToggle first.</p>';
-                            document.getElementById('tabs').innerHTML = '';
-                            return;
+                        if (!flags.length) {
+                            flagList.innerHTML = '<p style="color:#64748b">No flags found. Create a service in SmartToggle with Service ID set to this app\'s Azure AD client ID.</p>';
+                        } else {
+                            flagList.innerHTML = flags.map(f => `
+                                <div class="flag-row">
+                                    <span class="flag-name">${f.flagId}</span>
+                                    <span class="badge ${f.defaultValue ? 'on' : 'off'}">${f.defaultValue ? 'ON' : 'OFF'}</span>
+                                </div>
+                            `).join('');
                         }
 
-                        // Default to first service if none selected
-                        if (!selectedServiceId || !allServices.find(s => s.id === selectedServiceId)) {
-                            selectedServiceId = allServices[0].id;
-                        }
+                        const darkTheme = flags.find(f => f.flagId === 'dark-theme');
+                        darkTheme?.defaultValue ? body.classList.remove('light-theme') : body.classList.add('light-theme');
 
-                        renderTabs();
-                        renderFlags();
+                        const largeFont = flags.find(f => f.flagId === 'large-font');
+                        largeFont?.defaultValue ? body.classList.add('large-font') : body.classList.remove('large-font');
 
                         document.getElementById('lastUpdated').textContent =
                             'Last updated: ' + new Date().toLocaleTimeString();
                     } catch {
-                        document.getElementById('lastUpdated').textContent = 'Failed to fetch — retrying...';
+                        document.getElementById('lastUpdated').textContent = 'Failed to fetch flags — retrying...';
                     }
                 }
 
-                function renderTabs() {
-                    document.getElementById('tabs').innerHTML = allServices.map(s => `
-                        <div class="tab ${s.id === selectedServiceId ? 'active' : ''}"
-                             onclick="selectService('${s.id}')">${s.serviceName}</div>
-                    `).join('');
-                }
-
-                function renderFlags() {
-                    const body = document.getElementById('demoBody');
-                    const service = allServices.find(s => s.id === selectedServiceId);
-                    const flags = service?.flags ?? [];
-
-                    if (!flags.length) {
-                        document.getElementById('flagList').innerHTML =
-                            '<p style="color:#64748b">No flags for this service.</p>';
-                    } else {
-                        document.getElementById('flagList').innerHTML = flags.map(f => `
-                            <div class="flag-row">
-                                <span class="flag-name">${f.flagId}</span>
-                                <span class="badge ${f.defaultValue ? 'on' : 'off'}">${f.defaultValue ? 'ON' : 'OFF'}</span>
-                            </div>
-                        `).join('');
-                    }
-
-                    const darkTheme = flags.find(f => f.flagId === 'dark-theme');
-                    darkTheme?.defaultValue ? body.classList.remove('light-theme') : body.classList.add('light-theme');
-
-                    const largeFont = flags.find(f => f.flagId === 'large-font');
-                    largeFont?.defaultValue ? body.classList.add('large-font') : body.classList.remove('large-font');
-                }
-
-                function selectService(id) {
-                    selectedServiceId = id;
-                    renderTabs();
-                    renderFlags();
-                }
-
-                loadServices();
-                setInterval(loadServices, 10000);
+                loadFlags();
+                setInterval(loadFlags, 10000);
             </script>
         </body>
         </html>

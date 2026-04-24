@@ -90,7 +90,7 @@ namespace SmartToggle.BusinessLogic
                 if (company == null)
                     throw new Exception($"Company with ID '{service.CompanyId}' does not exist.");
 
-                service.Id = Guid.NewGuid().ToString();
+                service.Id = string.IsNullOrWhiteSpace(service.Id) ? Guid.NewGuid().ToString() : service.Id;
 
                 return await _serviceRepository.AddAsync(service);
             }
