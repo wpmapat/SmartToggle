@@ -86,17 +86,6 @@ namespace SmartToggle.Controllers
         }
 
         /// <summary>
-        /// Debug — dump all claims in the token
-        /// </summary>
-        [Authorize(Policy = "ReadFeatureFlags")]
-        [HttpGet("my-claims")]
-        public ActionResult GetMyClaims()
-        {
-            var claims = User.Claims.Select(c => new { c.Type, c.Value });
-            return Ok(claims);
-        }
-
-        /// <summary>
         /// Get feature flags for the calling app — uses appid (service ID) and tid (company ID) from token
         /// </summary>
         [Authorize(Policy = "ReadFeatureFlags")]
@@ -106,7 +95,7 @@ namespace SmartToggle.Controllers
             try
             {
                 var serviceId = User.FindFirst("appid")?.Value;
-                var companyId = User.FindFirst("tid")?.Value;
+                var companyId = User.FindFirst("http://schemas.microsoft.com/identity/claims/tenantid")?.Value;
 
                 if (string.IsNullOrEmpty(serviceId) || string.IsNullOrEmpty(companyId))
                     return BadRequest(new { message = "Token must contain appid and tid claims." });

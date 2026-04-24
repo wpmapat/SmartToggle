@@ -36,19 +36,16 @@ app.MapGet("/api/flags", async (IHttpClientFactory httpClientFactory) =>
         client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        var response = await client.GetAsync($"{smartToggleApiBase}/api/featureflag/my-claims");
+        var response = await client.GetAsync($"{smartToggleApiBase}/api/featureflag/my-flags");
         if (!response.IsSuccessStatusCode)
-        {
-            var body = await response.Content.ReadAsStringAsync();
-            return Results.Problem($"{(int)response.StatusCode}: {body}");
-        }
+            return Results.Ok(new List<object>());
 
         var flags = await response.Content.ReadFromJsonAsync<List<FeatureFlag>>();
         return Results.Ok(flags);
     }
-    catch (Exception ex)
+    catch
     {
-        return Results.Problem(ex.Message);
+        return Results.Ok(new List<object>());
     }
 });
 
