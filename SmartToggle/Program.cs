@@ -10,7 +10,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // Accepts either a user token (delegated) or an app token with FeatureFlags.Read role (client credentials)
+    options.AddPolicy("ReadFeatureFlags", policy =>
+        policy.RequireAssertion(ctx =>
+            ctx.User.HasClaim(c => c.Type == "roles" && c.Value == "FeatureFlags.Read") ||
+            ctx.User.HasClaim(c => c.Type == "http://schemas.microsoft.com/identity/claims/scope")
+        ));
+});
 
 // Add services to the container.
 builder.Services.AddControllers();
