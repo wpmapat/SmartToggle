@@ -39,9 +39,9 @@ app.MapGet("/api/flags", async (IHttpClientFactory httpClientFactory) =>
         var flags = await response.Content.ReadFromJsonAsync<List<FeatureFlag>>();
         return Results.Ok(flags);
     }
-    catch
+    catch (Exception ex)
     {
-        return Results.Ok(new List<object>());
+        return Results.Problem(ex.Message);
     }
 });
 
