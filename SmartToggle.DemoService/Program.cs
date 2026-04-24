@@ -34,7 +34,10 @@ app.MapGet("/api/flags", async (IHttpClientFactory httpClientFactory) =>
 
         var response = await client.GetAsync($"{smartToggleApiBase}/api/featureflag/service/{serviceId}");
         if (!response.IsSuccessStatusCode)
-            return Results.Ok(new List<object>());
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            return Results.Problem($"SmartToggle API returned {(int)response.StatusCode}: {body}");
+        }
 
         var flags = await response.Content.ReadFromJsonAsync<List<FeatureFlag>>();
         return Results.Ok(flags);
