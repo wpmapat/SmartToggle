@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  deploy-api:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,11 +25,39 @@ jobs:
         run: dotnet build SmartToggle/SmartToggle.csproj --configuration Release --no-restore
 
       - name: Publish
-        run: dotnet publish SmartToggle/SmartToggle.csproj --configuration Release --no-build --output ./publish
+        run: dotnet publish SmartToggle/SmartToggle.csproj --configuration Release --no-build --output ./publish-api
 
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ./publish
+          package: ./publish-api
+
+  deploy-demo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore SmartToggle.DemoService/SmartToggle.DemoService.csproj
+
+      - name: Build
+        run: dotnet build SmartToggle.DemoService/SmartToggle.DemoService.csproj --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish SmartToggle.DemoService/SmartToggle.DemoService.csproj --configuration Release --no-build --output ./publish-demo
+
+      - name: Deploy Demo to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_DEMO_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_DEMO_WEBAPP_PUBLISH_PROFILE }}
+          package: ./publish-demo
