@@ -1,3 +1,5 @@
+using Microsoft.Identity.Client;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient();
 
@@ -5,14 +7,32 @@ var app = builder.Build();
 
 var smartToggleApiBase = app.Configuration["SmartToggleApi:BaseUrl"] ?? "https://smarttoggle-api.azurewebsites.net";
 var serviceId = app.Configuration["SmartToggleApi:ServiceId"] ?? "c848db6e-7782-477b-bc84-a67dca9f8ef3";
+var tenantId = app.Configuration["AzureAd:TenantId"]!;
+var clientId = app.Configuration["AzureAd:ClientId"]!;
+var clientSecret = app.Configuration["AzureAd:ClientSecret"]!;
+var smartToggleApiClientId = app.Configuration["SmartToggleApi:ClientId"] ?? "19e962db-511a-4e6b-b8af-a5752b3d54e5";
 
 // Returns current feature flags as JSON (called by the demo page via polling)
 app.MapGet("/api/flags", async (IHttpClientFactory httpClientFactory) =>
 {
-    var client = httpClientFactory.CreateClient();
     try
     {
-        var response = await client.GetAsync($"{smartToggleApiBase}/api/public/featureflags/{serviceId}");
+        // Get token from Tenant B using client credentials
+        var confidentialClient = ConfidentialClientApplicationBuilder
+            .Create(clientId)
+            .WithClientSecret(clientSecret)
+            .WithAuthority($"https://login.microsoftonline.com/{tenantId}")
+            .Build();
+
+        var tokenResult = await confidentialClient
+            .AcquireTokenForClient([$"api://{smartToggleApiClientId}/.default"])
+            .ExecuteAsync();
+
+        var client = httpClientFactory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenResult.AccessToken);
+
+        var response = await client.GetAsync($"{smartToggleApiBase}/api/featureflag/service/{serviceId}");
         if (!response.IsSuccessStatusCode)
             return Results.Ok(new List<object>());
 
@@ -211,6 +231,7 @@ static class DemoPage
                     <h2>How It Works</h2>
                     <ol>
                         <li>Feature flags are stored in <strong>Azure Cosmos DB</strong></li>
+                        <li>This app (Tenant B) authenticates to SmartToggle API (Tenant A) using <strong>OAuth2 client credentials</strong></li>
                         <li>This page polls the <strong>SmartToggle API</strong> every 10 seconds</li>
                         <li>Toggle a flag in SmartToggle → this page updates automatically</li>
                         <li>No redeployment needed — changes take effect instantly</li>
@@ -233,7 +254,6 @@ static class DemoPage
                         const body = document.getElementById('demoBody');
                         const flagList = document.getElementById('flagList');
 
-                        // Render flag list
                         if (!flags.length) {
                             flagList.innerHTML = '<p style="color:#64748b">No flags found for this service.</p>';
                         } else {
