@@ -36,7 +36,7 @@ app.MapGet("/api/flags", async (IHttpClientFactory httpClientFactory) =>
         client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        var response = await client.GetAsync($"{smartToggleApiBase}/api/featureflag/my-flags");
+        var response = await client.GetAsync($"{smartToggleApiBase}/api/featureflag/my-claims");
         if (!response.IsSuccessStatusCode)
         {
             var body = await response.Content.ReadAsStringAsync();
