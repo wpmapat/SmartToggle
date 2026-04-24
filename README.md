@@ -4,17 +4,18 @@ A full-stack **feature flag management system** built on Azure. SmartToggle lets
 
 ## Live Demo
 
-> **[Live Demo →](https://smarttoggle-api.azurewebsites.net/demo)**  
-> Toggle `dark-theme` or `large-font` flags and watch the demo page update in real time.
+> **[Live Demo →](https://smarttoggle-demoservice.azurewebsites.net)**  
+> Toggle `dark-theme` or `large-font` flags in SmartToggle and watch the demo page update in real time.
 
 ---
 
 ## What It Does
 
 - Manage **companies**, **services**, and their **feature flags** through a web UI
-- Each user sees only their own data — full **multi-tenant isolation**
-- Services read their flags at runtime via a public API endpoint
+- Full **multi-tenant isolation** — each Azure AD tenant sees only their own data
+- Client applications read their flags at runtime via a secure API
 - Flag changes take effect within **10 seconds** — no redeployment required
+- Cross-tenant B2B authentication — a customer app in Tenant B can securely call the API hosted in Tenant A
 
 ---
 
@@ -24,10 +25,10 @@ A full-stack **feature flag management system** built on Azure. SmartToggle lets
 |-------|-----------|
 | Backend API | ASP.NET Core 8 Web API |
 | Database | Azure Cosmos DB (NoSQL) |
-| Authentication | Azure Entra ID — JWT bearer tokens |
+| Authentication | Azure Entra ID — JWT bearer tokens, OAuth2 client credentials |
 | Frontend | React + TypeScript (Vite) |
+| Demo Service | ASP.NET Core 8 minimal API |
 | API Hosting | Azure App Service |
-| UI Hosting | Azure Static Web Apps *(coming soon)* |
 | CI/CD | GitHub Actions |
 
 ---
@@ -35,27 +36,45 @@ A full-stack **feature flag management system** built on Azure. SmartToggle lets
 ## Architecture
 
 ```
-Browser (React + MSAL)
-    │
-    │  JWT Bearer Token (user login)
-    ▼
-ASP.NET Core 8 API  ──► Azure Cosmos DB
-    │                        │
-    │  [AllowAnonymous]       └── Companies
-    ▼                        └── Services
-Demo Service Page            └── FeatureFlags
-(polls every 10s)
+┌─────────────────────────────────────────────────────────┐
+│  Tenant A (SmartToggle Operator)                         │
+│                                                          │
+│   Browser (React + MSAL)                                 │
+│       │  JWT Bearer Token (delegated user token)         │
+│       ▼                                                  │
+│   ASP.NET Core 8 API  ──► Azure Cosmos DB                │
+│       │                       ├── Companies              │
+│       │                       ├── Services               │
+│       │                       └── FeatureFlags           │
+└───────┼─────────────────────────────────────────────────┘
+        │
+        │  OAuth2 Client Credentials (app token)
+        │  appid claim = Service ID
+        │  tid claim   = Company ID
+        │
+┌───────┼─────────────────────────────────────────────────┐
+│  Tenant B (Customer — e.g. Starbucks)                    │
+│                                                          │
+│   SmartToggle.DemoService                                │
+│       │  Authenticates using Azure AD app registration   │
+│       │  in Tenant B — no user login required            │
+│       ▼                                                  │
+│   Demo Web Page (polls every 10s)                        │
+│   UI changes based on active feature flags               │
+└─────────────────────────────────────────────────────────┘
 ```
 
-**Multi-tenancy:** The `oid` claim from the JWT token scopes all data queries per user. User A never sees User B's companies or flags.
+**Multi-tenancy:** The `tid` claim from the JWT token scopes all data queries per tenant. Tenant A never sees Tenant B's data.
+
+**Service identity:** A client app's Azure AD `appid` claim is used as the service ID. No service IDs need to be hardcoded or configured — the token identifies the service automatically.
 
 ---
 
 ## Data Model
 
 ```
-Company
-  └── Service
+Company (ID = Azure AD Tenant ID)
+  └── Service (ID = Azure AD App Client ID of the client app)
         └── FeatureFlag (boolean)
 ```
 
@@ -71,15 +90,23 @@ Company
 Create and manage boolean feature flags scoped to a service. Toggle them on/off instantly from the UI.
 
 ### Multi-Tenant Data Isolation
-Each authenticated user sees only their own companies and services, enforced at the data layer using the Azure AD `oid` claim.
+Each authenticated tenant sees only their own companies and services, enforced at the data layer using the Azure AD `tid` claim as the company ID.
+
+### Cross-Tenant B2B Authentication
+The demo service (Tenant B) authenticates to the SmartToggle API (Tenant A) using OAuth2 client credentials flow. The API identifies the calling service using the `appid` and `tid` claims from the token — no service IDs need to be passed in the request.
+
+### Authorization Policy
+The `ReadFeatureFlags` policy accepts both:
+- **Delegated tokens** (interactive user login via the React UI)
+- **App tokens** with `FeatureFlags.Read` role (machine-to-machine via client credentials)
 
 ### Demo Service
-A live demo page that reads its own feature flags from SmartToggle and changes its appearance in real time — demonstrating the core value of the system without any code changes or redeployment.
+A live ASP.NET Core app deployed as a separate Azure App Service. It authenticates as a Tenant B application and reads feature flags from SmartToggle — demonstrating the core value of the system. The page updates automatically every 10 seconds without any redeployment.
 
 ### Secure by Default
 - All write operations require a valid Azure AD JWT token
 - Managed Identity used for Cosmos DB access — no connection strings stored
-- Public read-only endpoint for service flag consumption
+- Flag reads require either a user token or an app token with `FeatureFlags.Read` role
 
 ---
 
@@ -89,7 +116,7 @@ A live demo page that reads its own feature flags from SmartToggle and changes i
 - .NET 8 SDK
 - Node.js 18+
 - Azure Cosmos DB account (or emulator)
-- Azure AD app registration
+- Azure AD app registration (multi-tenant)
 
 ### API
 ```bash
@@ -101,9 +128,10 @@ Add the following to `appsettings.Development.json` or user secrets:
 ```json
 {
   "AzureAd": {
-    "TenantId": "<your-tenant-id>",
+    "TenantId": "organizations",
     "ClientId": "<your-client-id>",
-    "Audience": "api://<your-client-id>"
+    "Audience": "api://<your-client-id>",
+    "ValidateIssuer": false
   },
   "CosmosDb": {
     "AccountEndpoint": "<your-cosmos-endpoint>",
@@ -124,6 +152,27 @@ npm run dev
 
 Open `http://localhost:5173`
 
+### Demo Service
+```bash
+cd SmartToggle.DemoService
+dotnet run
+```
+
+Set the following environment variables or user secrets:
+```json
+{
+  "AzureAd": {
+    "TenantId": "<tenant-b-id>",
+    "ClientId": "<demo-service-client-id>",
+    "ClientSecret": "<demo-service-client-secret>"
+  },
+  "SmartToggleApi": {
+    "BaseUrl": "https://localhost:7001",
+    "ClientId": "<smarttoggle-api-client-id>"
+  }
+}
+```
+
 ---
 
 ## Project Structure
@@ -134,6 +183,7 @@ SmartToggle/
 │   ├── Controllers/          # API endpoints
 │   ├── BusinessLogic/        # Business logic + repository interfaces
 │   └── Models/               # Data models
+├── SmartToggle.DemoService/  # Cross-tenant demo app (ASP.NET Core minimal API)
 ├── SmartToggle.UI/           # React + TypeScript frontend
 │   └── src/
 │       └── pages/            # CompaniesPage, ServicesPage, FeatureFlagsPage, DemoServicePage
