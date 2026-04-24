@@ -64,8 +64,7 @@ function AuthenticatedApp() {
                 <span className="nav-brand">SmartToggle</span>
                 <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                     {companyName && <span style={{ color: "#94a3b8", fontSize: "0.9rem" }}>{companyName}</span>}
-                    <button onClick={() => navigate("/demo")} style={{ background: "#7c3aed", border: "none", color: "white", padding: "6px 14px", borderRadius: "6px", cursor: "pointer" }}>Live Demo</button>
-                    <button onClick={handleLogout}>Sign out</button>
+<button onClick={handleLogout}>Sign out</button>
                 </div>
             </nav>
             <div className="container">
