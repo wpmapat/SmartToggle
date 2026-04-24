@@ -240,7 +240,7 @@ static class DemoPage
                         <li>This page polls the <strong>SmartToggle API</strong> every 10 seconds</li>
                         <li>Toggle a flag in SmartToggle → this page updates automatically</li>
                     </ol>
-                    <a class="manage-link" href="https://github.com/wpmapat/SmartToggle" target="_blank">View on GitHub →</a>
+                    <a class="manage-link" href="https://white-desert-0cc31181e.7.azurestaticapps.net" target="_blank">Manage flags in SmartToggle →</a>
                 </div>
 
                 <div class="status-bar">

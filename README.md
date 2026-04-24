@@ -4,6 +4,9 @@ A full-stack **feature flag management system** built on Azure. SmartToggle lets
 
 ## Live Demo
 
+> **[SmartToggle UI →](https://white-desert-0cc31181e.7.azurestaticapps.net)**  
+> Sign in with Microsoft to manage your feature flags.
+
 > **[Live Demo →](https://smarttoggle-demoservice.azurewebsites.net)**  
 > Toggle `dark-theme` or `large-font` flags in SmartToggle and watch the demo page update in real time.
 
