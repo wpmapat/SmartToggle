@@ -8,15 +8,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(
-        jwtOptions =>
-        {
-            jwtOptions.TokenValidationParameters.ValidateIssuer = false;
-        },
-        microsoftIdentityOptions =>
-        {
-            builder.Configuration.Bind("AzureAd", microsoftIdentityOptions);
-        });
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+
+// PostConfigure runs after Microsoft.Identity.Web's own setup, ensuring our overrides stick
+builder.Services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+{
+    options.TokenValidationParameters.ValidateIssuer = false;
+});
 
 builder.Services.AddAuthorization(options =>
 {
