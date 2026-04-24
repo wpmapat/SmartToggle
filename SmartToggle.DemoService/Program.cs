@@ -12,6 +12,26 @@ var clientId = app.Configuration["AzureAd:ClientId"]!;
 var clientSecret = app.Configuration["AzureAd:ClientSecret"]!;
 var smartToggleApiClientId = app.Configuration["SmartToggleApi:ClientId"] ?? "19e962db-511a-4e6b-b8af-a5752b3d54e5";
 
+// Temporary debug endpoint — shows decoded token claims
+app.MapGet("/api/debug-token", async () =>
+{
+    var confidentialClient = ConfidentialClientApplicationBuilder
+        .Create(clientId)
+        .WithClientSecret(clientSecret)
+        .WithAuthority($"https://login.microsoftonline.com/{tenantId}")
+        .Build();
+
+    var tokenResult = await confidentialClient
+        .AcquireTokenForClient([$"api://{smartToggleApiClientId}/.default"])
+        .ExecuteAsync();
+
+    var parts = tokenResult.AccessToken.Split('.');
+    var payload = parts[1];
+    var padded = payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=');
+    var json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(padded));
+    return Results.Content(json, "application/json");
+});
+
 // Returns current feature flags as JSON (called by the demo page via polling)
 app.MapGet("/api/flags", async (IHttpClientFactory httpClientFactory) =>
 {
