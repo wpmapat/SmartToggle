@@ -70,8 +70,8 @@ export default function ServicesPage() {
             setNewDesc("");
             setNewServiceId("");
             fetchServices();
-        } catch {
-            setError("Failed to create service.");
+        } catch (err: any) {
+            setError(err.response?.data?.message || JSON.stringify(err.response?.data) || "Failed to create service.");
         }
     };
 
