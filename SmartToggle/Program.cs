@@ -8,7 +8,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+    .AddMicrosoftIdentityWebApi(
+        jwtOptions =>
+        {
+            jwtOptions.TokenValidationParameters.ValidateIssuer = false;
+        },
+        microsoftIdentityOptions =>
+        {
+            builder.Configuration.Bind("AzureAd", microsoftIdentityOptions);
+        });
 
 builder.Services.AddAuthorization(options =>
 {
