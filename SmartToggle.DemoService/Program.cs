@@ -54,7 +54,7 @@ app.MapGet("/", () => Results.Content(DemoPage.Html, "text/html"));
 
 app.Run();
 
-record FeatureFlag(string FlagId, bool DefaultValue);
+record FeatureFlag(string Id, string CompanyId, string ServiceId, string FlagId, string Type, bool DefaultValue);
 
 static class DemoPage
 {

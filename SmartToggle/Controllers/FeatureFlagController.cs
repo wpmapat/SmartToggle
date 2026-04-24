@@ -101,7 +101,7 @@ namespace SmartToggle.Controllers
                     return BadRequest(new { message = "Token must contain appid and tid claims." });
 
                 var flags = await _featureFlagService.GetFeatureFlagsByServiceIdAsync(serviceId);
-                return Ok(new { serviceId, companyId, flags = flags ?? Enumerable.Empty<FeatureFlag<bool>>() });
+                return Ok(flags ?? Enumerable.Empty<FeatureFlag<bool>>());
             }
             catch (Exception)
             {
