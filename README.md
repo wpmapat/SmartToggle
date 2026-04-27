@@ -201,7 +201,27 @@ SmartToggle/
 ├── SmartToggle.UI/           # React + TypeScript frontend
 │   └── src/
 │       └── pages/            # CompaniesPage, ServicesPage, FeatureFlagsPage, DemoServicePage
-└── SmartToggle.Tests/        # xUnit unit tests (16 tests)
+└── SmartToggle.Tests/        # xUnit unit tests (27 tests)
+```
+
+---
+
+## Monitoring
+
+Application Insights is wired up in both the API and DemoService. The following business events are logged as structured traces:
+
+- **Company provisioned** — tenant ID and company name
+- **Service created / deleted** — service ID, name, and company ID
+- **Feature flag created / toggled / deleted** — flag name, service ID, and new value
+- **Flag fetch errors** in DemoService — HTTP status from SmartToggle API
+
+To query logs, go to Application Insights → Logs and run:
+
+```kusto
+traces
+| where message != ""
+| order by timestamp desc
+| take 50
 ```
 
 ---
