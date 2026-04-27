@@ -12,6 +12,17 @@ A full-stack **feature flag management system** built on Azure. SmartToggle lets
 
 ---
 
+## Why I Built This
+
+Feature flags are a core part of how modern engineering teams ship safely — Netflix, GitHub, and Spotify all use them to decouple deployments from releases. I wanted to build a production-grade version from scratch to understand the full stack: multi-tenant data isolation, cross-tenant B2B authentication, and real-time flag propagation without polling hacks.
+
+The interesting engineering problems were:
+- **Cross-tenant auth without hardcoded IDs** — the demo service (a separate Azure AD tenant) authenticates to the API using client credentials. The API identifies which service is calling purely from `appid` and `tid` claims in the token — no service ID needs to be configured or passed.
+- **Multi-tenancy at the data layer** — every query is scoped by the `tid` JWT claim, so tenant data isolation is enforced even if the API layer has a bug.
+- **Zero-redeployment flag changes** — flag reads go straight to Cosmos DB; the demo page polls every 10 seconds and reflects changes instantly.
+
+---
+
 ## What It Does
 
 - Manage **companies**, **services**, and their **feature flags** through a web UI
