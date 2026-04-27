@@ -14,10 +14,12 @@ namespace SmartToggle.Controllers
     public class ServiceController : ControllerBase
     {
         private readonly IServiceBusinessLogic _serviceService;
+        private readonly ILogger<ServiceController> _logger;
 
-        public ServiceController(IServiceBusinessLogic serviceService)
+        public ServiceController(IServiceBusinessLogic serviceService, ILogger<ServiceController> logger)
         {
             _serviceService = serviceService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -97,6 +99,7 @@ namespace SmartToggle.Controllers
                     return BadRequest(ModelState);
 
                 var createdService = await _serviceService.CreateServiceAsync(service);
+                _logger.LogInformation("Service created: {ServiceId} ({ServiceName}) for company {CompanyId}", createdService.Id, createdService.ServiceName, createdService.CompanyId);
                 return CreatedAtAction(nameof(GetServiceById), new { id = createdService.Id }, createdService);
             }
             catch (ArgumentException ex)
@@ -148,6 +151,7 @@ namespace SmartToggle.Controllers
                 if (!result)
                     return NotFound(new { message = "Service not found" });
 
+                _logger.LogInformation("Service deleted: {ServiceId}", id);
                 return NoContent();
             }
             catch (InvalidOperationException ex)

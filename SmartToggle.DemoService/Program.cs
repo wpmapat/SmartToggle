@@ -2,6 +2,7 @@ using Microsoft.Identity.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient();
+builder.Services.AddApplicationInsightsTelemetry();
 
 var app = builder.Build();
 
@@ -27,7 +28,7 @@ async Task<string> GetToken()
 }
 
 // Returns feature flags for this app — SmartToggle identifies service by appid claim in token
-app.MapGet("/api/flags", async (IHttpClientFactory httpClientFactory) =>
+app.MapGet("/api/flags", async (IHttpClientFactory httpClientFactory, ILogger<Program> logger) =>
 {
     try
     {
@@ -38,13 +39,18 @@ app.MapGet("/api/flags", async (IHttpClientFactory httpClientFactory) =>
 
         var response = await client.GetAsync($"{smartToggleApiBase}/api/featureflag/my-flags");
         if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning("Failed to fetch flags from SmartToggle API: {StatusCode}", response.StatusCode);
             return Results.Ok(new List<object>());
+        }
 
         var flags = await response.Content.ReadFromJsonAsync<List<FeatureFlag>>();
+        logger.LogInformation("Fetched {Count} feature flags from SmartToggle API", flags?.Count ?? 0);
         return Results.Ok(flags);
     }
-    catch
+    catch (Exception ex)
     {
+        logger.LogError(ex, "Error fetching feature flags from SmartToggle API");
         return Results.Ok(new List<object>());
     }
 });

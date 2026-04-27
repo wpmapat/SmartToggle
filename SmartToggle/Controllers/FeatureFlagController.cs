@@ -14,10 +14,12 @@ namespace SmartToggle.Controllers
     public class FeatureFlagController : ControllerBase
     {
         private readonly IFeatureFlagBusinessLogic _featureFlagService;
+        private readonly ILogger<FeatureFlagController> _logger;
 
-        public FeatureFlagController(IFeatureFlagBusinessLogic featureFlagService)
+        public FeatureFlagController(IFeatureFlagBusinessLogic featureFlagService, ILogger<FeatureFlagController> logger)
         {
             _featureFlagService = featureFlagService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -170,6 +172,7 @@ namespace SmartToggle.Controllers
                     return BadRequest(ModelState);
 
                 var createdFlag = await _featureFlagService.CreateFeatureFlagAsync(featureFlag);
+                _logger.LogInformation("Feature flag created: {FlagId} for service {ServiceId}, default={DefaultValue}", createdFlag.FlagId, createdFlag.ServiceId, createdFlag.DefaultValue);
                 return CreatedAtAction(nameof(GetFeatureFlagById), new { id = createdFlag.Id }, createdFlag);
             }
             catch (ArgumentException ex)
@@ -197,6 +200,7 @@ namespace SmartToggle.Controllers
                 if (updatedFlag == null)
                     return NotFound(new { message = "Feature flag not found" });
 
+                _logger.LogInformation("Feature flag toggled: {FlagId} for service {ServiceId}, value={DefaultValue}", updatedFlag.FlagId, updatedFlag.ServiceId, updatedFlag.DefaultValue);
                 return Ok(updatedFlag);
             }
             catch (ArgumentException ex)
@@ -221,6 +225,7 @@ namespace SmartToggle.Controllers
                 if (!result)
                     return NotFound(new { message = "Feature flag not found" });
 
+                _logger.LogInformation("Feature flag deleted: {FlagId} from service {ServiceId}", id, serviceId);
                 return NoContent();
             }
             catch (ArgumentException ex)

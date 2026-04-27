@@ -18,10 +18,12 @@ namespace SmartToggle.Controllers
     public class CompanyController : ControllerBase
     {
         private readonly ICompanyBusinessLogic _companyService;
+        private readonly ILogger<CompanyController> _logger;
 
-        public CompanyController(ICompanyBusinessLogic companyService)
+        public CompanyController(ICompanyBusinessLogic companyService, ILogger<CompanyController> logger)
         {
             _companyService = companyService;
+            _logger = logger;
         }
 
         private string GetOwnerId() =>
@@ -50,10 +52,12 @@ namespace SmartToggle.Controllers
                     return BadRequest(new { message = "Tenant ID not found in token." });
 
                 var company = await _companyService.ProvisionCompanyAsync(tenantId, request.CompanyName);
+                _logger.LogInformation("Company provisioned: {CompanyId} ({CompanyName})", company.Id, company.Name);
                 return Ok(company);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error provisioning company for tenant {TenantId}", GetTenantId());
                 return StatusCode(500, new { message = "An unexpected error occurred." });
             }
         }
@@ -162,6 +166,7 @@ namespace SmartToggle.Controllers
                 if (!result)
                     return NotFound(new { message = "Company not found" });
 
+                _logger.LogInformation("Company deleted: {CompanyId}", id);
                 return NoContent();
             }
             catch (InvalidOperationException ex)
