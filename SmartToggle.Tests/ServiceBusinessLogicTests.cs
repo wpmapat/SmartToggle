@@ -84,5 +84,54 @@ namespace SmartToggle.Tests
             Assert.NotNull(result);
             Assert.Equal("new-id", result.Id);
         }
+
+        [Fact]
+        public async Task CreateServiceAsync_WhenServiceNameMissing_ThrowsException()
+        {
+            var service = new Service { ServiceName = "", CompanyId = "company-1" };
+
+            await Assert.ThrowsAsync<System.Exception>(
+                () => _sut.CreateServiceAsync(service));
+        }
+
+        [Fact]
+        public async Task CreateServiceAsync_WhenCustomIdProvided_UsesProvidedId()
+        {
+            var company = new Company { Id = "company-1" };
+            var service = new Service { Id = "custom-id", ServiceName = "My Service", CompanyId = "company-1" };
+
+            _companyRepo.Setup(r => r.GetByIdAsync("company-1")).ReturnsAsync(company);
+            _serviceRepo.Setup(r => r.AddAsync(It.Is<Service>(s => s.Id == "custom-id")))
+                        .ReturnsAsync(service);
+
+            var result = await _sut.CreateServiceAsync(service);
+
+            Assert.Equal("custom-id", result.Id);
+        }
+
+        [Fact]
+        public async Task CreateServiceAsync_WhenNoIdProvided_GeneratesId()
+        {
+            var company = new Company { Id = "company-1" };
+            var service = new Service { ServiceName = "My Service", CompanyId = "company-1" };
+
+            _companyRepo.Setup(r => r.GetByIdAsync("company-1")).ReturnsAsync(company);
+            _serviceRepo.Setup(r => r.AddAsync(It.IsAny<Service>()))
+                        .ReturnsAsync((Service s) => s);
+
+            var result = await _sut.CreateServiceAsync(service);
+
+            Assert.False(string.IsNullOrEmpty(result.Id));
+        }
+
+        [Fact]
+        public async Task UpdateServiceAsync_WhenServiceNotFound_ReturnsNull()
+        {
+            _serviceRepo.Setup(r => r.GetByIdAsync("missing")).ReturnsAsync((Service?)null);
+
+            var result = await _sut.UpdateServiceAsync("missing", new Service { ServiceName = "Updated" });
+
+            Assert.Null(result);
+        }
     }
 }

@@ -75,5 +75,49 @@ namespace SmartToggle.Tests
 
             Assert.Null(result);
         }
+
+        [Fact]
+        public async Task ProvisionCompanyAsync_WhenCompanyDoesNotExist_CreatesNewCompany()
+        {
+            var tenantId = "tenant-1";
+            var created = new Company { Id = tenantId, Name = "Contoso", OwnerId = tenantId };
+
+            _companyRepo.Setup(r => r.GetByIdAsync(tenantId)).ReturnsAsync((Company?)null);
+            _companyRepo.Setup(r => r.AddAsync(It.IsAny<Company>())).ReturnsAsync(created);
+
+            var result = await _sut.ProvisionCompanyAsync(tenantId, "Contoso");
+
+            Assert.Equal("Contoso", result.Name);
+            _companyRepo.Verify(r => r.AddAsync(It.IsAny<Company>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ProvisionCompanyAsync_WhenCompanyExistsWithMyOrganization_UpdatesName()
+        {
+            var tenantId = "tenant-1";
+            var existing = new Company { Id = tenantId, Name = "My Organization", OwnerId = tenantId };
+
+            _companyRepo.Setup(r => r.GetByIdAsync(tenantId)).ReturnsAsync(existing);
+            _companyRepo.Setup(r => r.UpdateAsync(It.IsAny<Company>())).ReturnsAsync(existing);
+
+            var result = await _sut.ProvisionCompanyAsync(tenantId, "Contoso");
+
+            Assert.Equal("Contoso", result.Name);
+            _companyRepo.Verify(r => r.UpdateAsync(It.IsAny<Company>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ProvisionCompanyAsync_WhenCompanyExistsWithRealName_DoesNotUpdate()
+        {
+            var tenantId = "tenant-1";
+            var existing = new Company { Id = tenantId, Name = "Contoso", OwnerId = tenantId };
+
+            _companyRepo.Setup(r => r.GetByIdAsync(tenantId)).ReturnsAsync(existing);
+
+            var result = await _sut.ProvisionCompanyAsync(tenantId, "Contoso");
+
+            Assert.Equal("Contoso", result.Name);
+            _companyRepo.Verify(r => r.UpdateAsync(It.IsAny<Company>()), Times.Never);
+        }
     }
 }

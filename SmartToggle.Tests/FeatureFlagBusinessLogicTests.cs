@@ -94,5 +94,62 @@ namespace SmartToggle.Tests
             await Assert.ThrowsAsync<System.Exception>(
                 () => _sut.CreateFeatureFlagAsync(flag));
         }
+
+        [Fact]
+        public async Task CreateFeatureFlagAsync_WhenCompanyIdMissing_ThrowsException()
+        {
+            var flag = new FeatureFlag<bool>
+            {
+                FlagId = "flag-1",
+                CompanyId = "",
+                ServiceId = "service-1",
+                Type = "bool",
+                DefaultValue = true
+            };
+
+            await Assert.ThrowsAsync<System.Exception>(
+                () => _sut.CreateFeatureFlagAsync(flag));
+        }
+
+        [Fact]
+        public async Task CreateFeatureFlagAsync_WhenServiceIdMissing_ThrowsException()
+        {
+            var flag = new FeatureFlag<bool>
+            {
+                FlagId = "flag-1",
+                CompanyId = "company-1",
+                ServiceId = "",
+                Type = "bool",
+                DefaultValue = true
+            };
+
+            await Assert.ThrowsAsync<System.Exception>(
+                () => _sut.CreateFeatureFlagAsync(flag));
+        }
+
+        [Fact]
+        public async Task UpdateFeatureFlagAsync_WhenFlagExists_ReturnsUpdatedFlag()
+        {
+            var existing = new FeatureFlag<bool> { Id = "flag-1", ServiceId = "service-1", DefaultValue = true };
+            var updated = new FeatureFlag<bool> { Id = "flag-1", ServiceId = "service-1", DefaultValue = false };
+
+            _featureFlagRepo.Setup(r => r.GetByIdAsync("flag-1", "service-1")).ReturnsAsync(existing);
+            _featureFlagRepo.Setup(r => r.UpdateAsync(It.IsAny<FeatureFlag<bool>>())).ReturnsAsync(updated);
+
+            var result = await _sut.UpdateFeatureFlagAsync("flag-1", new FeatureFlag<bool> { ServiceId = "service-1", DefaultValue = false });
+
+            Assert.NotNull(result);
+            Assert.False(result.DefaultValue);
+        }
+
+        [Fact]
+        public async Task DeleteFeatureFlagAsync_WhenFlagExists_ReturnsTrue()
+        {
+            _featureFlagRepo.Setup(r => r.DeleteAsync("flag-1", "service-1")).ReturnsAsync(true);
+
+            var result = await _sut.DeleteFeatureFlagAsync("flag-1", "service-1");
+
+            Assert.True(result);
+        }
     }
 }
